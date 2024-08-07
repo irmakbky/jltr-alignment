@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Alignment App API Demo Frontend</title>
+    <script>
+        function uploadAndProcessAudio() {
+            var fileInput = document.getElementById('audioInput');
+            var file = fileInput.files[0];
+            var formData = new FormData();
+            formData.append('audio', file);
+
+            // Sending the PDF to the server
+            fetch('/detect_beats', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('beats').textContent = JSON.stringify(data, null, 2);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function uploadAndProcessPDF() {
+            var fileInput = document.getElementById('pdfInput');
+            var file = fileInput.files[0];
+            var formData = new FormData();
+            formData.append('pdf', file);
+
+            // Sending the PDF to the server
+            fetch('/pdf_to_images', {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.images) {
+                        data.images.forEach((imageBase64, index) => {
+                            processImage(imageBase64, index);
+                        });
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function processImage(imageBase64, index) {
+            var canvas = document.createElement('canvas');
+            canvas.id = 'canvas' + index;
+            document.body.appendChild(canvas);
+
+            var ctx = canvas.getContext('2d');
+            var image = new Image();
+            image.onload = function () {
+                canvas.width = image.width;
+                canvas.height = image.height;
+                ctx.drawImage(image, 0, 0);
+
+                // Convert base64 image back to blob
+                fetch(image.src)
+                    .then(res => res.blob())
+                    .then(blob => {
+                        var formData = new FormData();
+                        formData.append('image', blob, 'page-' + index + '.png');
+
+                        fetch('/detect_measures', {
+                            method: 'POST',
+                            body: formData
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.bounding_boxes) {
+                                    data.bounding_boxes.forEach(box => {
+                                        ctx.beginPath();
+                                        ctx.rect(box.left, box.top, box.width, box.height);
+                                        ctx.strokeStyle = 'red';
+                                        ctx.stroke();
+                                    });
+                                }
+                            })
+                            .catch(error => console.error('Error:', error));
+                    });
+            };
+            image.src = 'data:image/png;base64,' + imageBase64;
+        }
+    </script>
+</head>
+
+<body>
+    <div>
+        <input type="file" id="audioInput">
+        <button onclick="uploadAndProcessAudio()">Upload and Process Audio</button>
+        <div id="beats"></div>
+    </div>
+    <div>
+        <input type="file" id="pdfInput" accept=".pdf">
+        <button onclick="uploadAndProcessPDF()">Upload and Process PDF</button>
+    </div>
+</body>
+
+</html>

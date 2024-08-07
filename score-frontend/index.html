@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Sheet Music Annotator</title>
+        <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/crypto-js@4.2.0/crypto-js.min.js"></script>
+        <script src="constant.js"></script>
+        <script src="api.js"></script>
+        <script src="helpers.js"></script>
+        <script src="types.js"></script>
+        <script src="index.js"></script>
+    </head>
+
+    <body>
+        <div>
+            <button id="new-project">New Project</button>
+            <button id="load-project">Load Project</button>
+            <button id="save-project">Save Project</button>
+        </div>
+        <div id="project-ui">
+            <div id="project-ui-spinner" style="display: none">
+                <p>WORKING...</p>
+            </div>
+            <div id="project-ui-loaded" style="display: none">
+                <div>
+                    Edit mode:
+                    <input
+                        type="radio"
+                        id="mode-measures"
+                        name="edit-mode"
+                        value="measures"
+                        checked
+                    />
+                    <label for="mode-measures">Measures</label>
+                    <input
+                        type="radio"
+                        id="mode-repeats"
+                        name="edit-mode"
+                        value="repeats"
+                    />
+                    <label for="mode-repeats">Repeats</label>
+                    <input
+                        type="radio"
+                        id="mode-annotations"
+                        name="edit-mode"
+                        value="annotations"
+                        checked
+                    />
+                    <label for="mode-annotations">Annotations</label>
+                    <input
+                        type="radio"
+                        id="mode-align"
+                        name="edit-mode"
+                        value="align"
+                        checked
+                    />
+                    <label for="mode-align">Alignment</label>
+                </div>
+                <div>
+                    Page nav:
+                    <button id="nav-start">&#60;&#60;</button>
+                    <button id="nav-prev">&#60;</button>
+                    <span
+                        ><span id="nav-current"></span> of
+                        <span id="nav-total"></span
+                    ></span>
+                    <button id="nav-next">&#62;</button>
+                    <button id="nav-end">&#62;&#62;</button>
+                </div>
+                <div>
+                    Zoom:
+                    <input
+                        type="range"
+                        id="zoom"
+                        min="500"
+                        max="2000"
+                        step="1"
+                        value="1000"
+                    />
+                </div>
+                <div>
+                    <div
+                        class="mode-ui"
+                        id="mode-measures-ui"
+                        style="display: none"
+                    ></div>
+                    <div
+                        class="mode-ui"
+                        id="mode-repeats-ui"
+                        style="display: none"
+                    ></div>
+                    <div
+                        class="mode-ui"
+                        id="mode-annotations-ui"
+                        style="display: none"
+                    >
+                        <div>
+                            <div id="keys-input" style="display: none">
+                                <label for="key-measure-num"
+                                    >Measure Number:</label
+                                >
+                                <input type="text" id="key-measure-num" />
+                                <label for="keys">Key</label>
+                                <select id="keys">
+                                    <option value="C_MAJOR">C_MAJOR</option>
+                                    <option value="F_MAJOR">F_MAJOR</option>
+                                    <option value="B_FLAT_MAJOR">
+                                        B_FLAT_MAJOR
+                                    </option>
+                                    <option value="E_FLAT_MAJOR">
+                                        E_FLAT_MAJOR
+                                    </option>
+                                    <option value="A_FLAT_MAJOR">
+                                        A_FLAT_MAJOR
+                                    </option>
+                                    <option value="D_FLAT_MAJOR">
+                                        D_FLAT_MAJOR
+                                    </option>
+                                    <option value="G_FLAT_MAJOR">
+                                        G_FLAT_MAJOR
+                                    </option>
+                                    <option value="C_FLAT_MAJOR">
+                                        C_FLAT_MAJOR
+                                    </option>
+                                    <option value="G_MAJOR">G_MAJOR</option>
+                                    <option value="D_MAJOR">D_MAJOR</option>
+                                    <option value="A_MAJOR">A_MAJOR</option>
+                                    <option value="E_MAJOR">E_MAJOR</option>
+                                    <option value="B_MAJOR">B_MAJOR</option>
+                                    <option value="F_SHARP_MAJOR">
+                                        F_SHARP_MAJOR
+                                    </option>
+                                    <option value="C_SHARP_MAJOR">
+                                        C_SHARP_MAJOR
+                                    </option>
+                                </select>
+                                <button id="add-keys">Add Keys</button>
+                            </div>
+
+                            <!--                             <div id="keys-input" style="display:none;">
+                                <label for="key-measure-num">Measure Number:</label>
+                                <input type="text" id="key-measure-num">
+                                <label for="keys">Key</label>
+                                <input type="text" id="keys">
+                                <button id="add-keys">Add Keys</button>
+                            </div> -->
+
+                            <h3>Key Assignments</h3>
+                            <ul id="keys-list"></ul>
+
+                            <button id="save-keys">Save Keys</button>
+                        </div>
+                        <div>
+                            <label for="transposition"
+                                >Transposition Factor</label
+                            >
+                            <input type="number" id="transposition" step="1" />
+                            <button id="save-transposition">
+                                Save Transposition
+                            </button>
+                        </div>
+                    </div>
+                    <div
+                        class="mode-ui"
+                        id="mode-align-ui"
+                        style="display: none"
+                    >
+                        <div>
+                            <button id="load-audio">Load Audio</button>
+                            <button id="align">Align</button>
+                        </div>
+                        <div>
+                            Transport:
+                            <div style="display: inline">
+                                <button id="transport-play">Play</button>
+                                <button id="transport-pause">Pause</button>
+                                <button id="transport-stop">Stop</button>
+                                Measure: <span id="transport-measure">0</span>
+                            </div>
+                            <div>
+                                <input
+                                    type="range"
+                                    id="transport"
+                                    min="0"
+                                    max="1000"
+                                    step="1"
+                                    value="0"
+                                    style="width: 500px"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <canvas id="page-canvas" height="800"></canvas>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
