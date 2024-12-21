@@ -20,7 +20,7 @@ docker run \
 	-it \
 	--rm \
 	$DOCKER_GPU_ARG \
-	--name "${USER}_alignment_notebook" \
+	--name "${USER}_detect_bboxes" \
 	-v $(pwd)/mus_align:/jltr-alignment/mus_align \
 	-v $(pwd)/notebook:/jltr-alignment/notebook \
     -v $(pwd)/bboxes/images:/jltr-alignment/images \

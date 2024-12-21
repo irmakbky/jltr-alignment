@@ -23,6 +23,10 @@ docker run \
 	--name "${USER}_alignment_notebook" \
 	-v $(pwd)/mus_align:/jltr-alignment/mus_align \
 	-v $(pwd)/notebook:/jltr-alignment/notebook \
+    -v $(pwd)/bboxes/images:/jltr-alignment/images \
+    -v $(pwd)/bboxes/audio:/jltr-alignment/audio \
+    -v $(pwd)/bboxes/approx_alignments:/jltr-alignment/approx_alignments \
+    -v $(pwd)/bboxes/detected_bboxes:/jltr-alignment/detected_bboxes \
 	-p $PORT:8888 \
 	-t jltr-alignment-v2 \
 	jupyter notebook \
