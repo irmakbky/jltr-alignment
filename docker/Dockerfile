@@ -8,8 +8,8 @@ RUN apt-get update --fix-missing
 
 # Copy dataset
 WORKDIR /jltr-alignment
-COPY dataset/ dataset/
-COPY smr_data/ smr_data/
+# COPY dataset/ dataset/
+# COPY smr_data/ smr_data/
 ENV ALIGNMENT_APP_DATA_DIR=/jltr-alignment/dataset
 ENV SMR_DATA_DIR=/jltr-alignment/smr_data
 
